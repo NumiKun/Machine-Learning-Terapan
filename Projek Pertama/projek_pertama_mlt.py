@@ -7,6 +7,8 @@ Original file is located at
     https://colab.research.google.com/drive/1GPMIx3pdN3HD6jbebvJwrr5EOgRgfbe4
 
 ### Import Libraries
+
+Mengimpor berbagai library penting yang digunakan untuk pengolahan data, visualisasi, pemodelan machine learning, dan evaluasi performa model. Mulai dari pengambilan data dari Kaggle, manipulasi data dengan Pandas dan NumPy, visualisasi dengan Matplotlib dan Seaborn, hingga penggunaan algoritma klasifikasi dan metrik evaluasi dari scikit-learn.
 """
 
 # Commented out IPython magic to ensure Python compatibility.
@@ -28,11 +30,16 @@ from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.metrics import precision_score, recall_score, f1_score
 
-"""### Load Dataset"""
+"""### Load Dataset
+
+#### Mengunduh dataset kanker payudara secara otomatis dari Kaggle menggunakan library kagglehub.
+"""
 
 datakaggle = kagglehub.dataset_download("yasserh/breast-cancer-dataset")
 
 print("Path to dataset files:", datakaggle)
+
+"""#### Membuat folder lokal bernama /content/breast-cancer-dataset jika belum ada, lalu menyalin seluruh isi dataset yang sudah diunduh dari source_dir (folder hasil download Kaggle) ke folder tersebut."""
 
 source_dir = datakaggle
 databreast = '/content/breast-cancer-dataset'
@@ -44,6 +51,8 @@ shutil.copytree(source_dir, databreast, dirs_exist_ok=True)
 
 print(f"Dataset copied from {source_dir} to {databreast}")
 
+"""#### Menggabungkan path folder dataset dengan nama file breast-cancer.csv untuk mendapatkan path lengkap file CSV, lalu membaca file tersebut ke dalam sebuah DataFrame menggunakan Pandas"""
+
 csv_file_path = os.path.join(databreast, 'breast-cancer.csv')
 df = pd.read_csv(csv_file_path)
 df
@@ -51,15 +60,30 @@ df
 """### Exploratory Data Analysis
 
 #### Deskripsi Variabel
+
+##### Menampilkan ringkasan informasi dari dataset, seperti jumlah baris dan kolom, tipe data setiap kolom, jumlah nilai non-null, serta penggunaan memori.
 """
 
 df.info()
 
+"""Insight: Dataset terdiri dari 569 baris dan 32 kolom, dengan mayoritas fitur berupa data numerik (float64), satu kolom identifikasi (int64), dan satu kolom target kategori (object).
+
+##### Menampilkan ringkasan statistik deskriptif dari semua kolom numerik dalam DataFrame
+"""
+
 df.describe()
+
+"""Insight: Fitur-fitur numerik dalam dataset memiliki rentang nilai dan variasi yang cukup besar, terutama pada fitur seperti area_mean dan radius_worst yang menunjukkan nilai maksimum jauh di atas kuartil ketiga, mengindikasikan adanya nilai ekstrim atau outlier yang penting untuk dianalisis lebih lanjut. Distribusi data secara umum cenderung simetris, namun beberapa fitur memiliki perbedaan signifikan antara mean dan median yang mengindikasikan skewness. Selain itu, tidak ada data yang hilang, sehingga statistik deskriptif ini menggambarkan kondisi data yang lengkap dan siap untuk tahap preprocessing
+
+##### Menghitung dan menampilkan jumlah masing-masing kategori dalam kolom diagnosis
+"""
 
 print(df['diagnosis'].value_counts())
 
-"""#### Menangani Missing Values"""
+"""Insight: Output menunjukkan bahwa dataset terdiri dari 357 sampel dengan diagnosis jinak (B) dan 212 sampel dengan diagnosis ganas (M). Hal ini mengindikasikan distribusi kelas yang tidak seimbang, di mana kelas jinak lebih dominan dibanding kelas ganas
+
+#### Menangani Missing Values
+"""
 
 missing_counts = df.isnull().sum()
 print(missing_counts)
@@ -67,129 +91,197 @@ print(missing_counts)
 total_missing = df.isnull().sum().sum()
 print(f"Total missing values in dataset: {total_missing}")
 
-"""#### Menangani Outliers"""
+"""Insight: Output tersebut menunjukkan bahwa tidak ada nilai yang hilang (missing values) pada seluruh kolom dataset
+
+#### Menangani Outliers
+
+##### Mendeteksi outlier pada kolom **diagnosis**
+"""
 
 sns.boxplot(x=df['diagnosis'])
 plt.title('diagnosis')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **radius_mean**"""
+
 sns.boxplot(x=df['radius_mean'])
 plt.title('radius_mean')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **texture_mean**"""
 
 sns.boxplot(x=df['texture_mean'])
 plt.title('texture_mean')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **perimeter_mean**"""
+
 sns.boxplot(x=df['perimeter_mean'])
 plt.title('perimeter_mean')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **area_mean**"""
 
 sns.boxplot(x=df['area_mean'])
 plt.title('area_mean')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **compactness_mean**"""
+
 sns.boxplot(x=df['compactness_mean'])
 plt.title('compactness_mean')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **concavity_mean**"""
 
 sns.boxplot(x=df['concavity_mean'])
 plt.title('concavity_mean')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **concave points_mean**"""
+
 sns.boxplot(x=df['concave points_mean'])
 plt.title('concave points_mean')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **symmetry_mean**"""
 
 sns.boxplot(x=df['symmetry_mean'])
 plt.title('symmetry_mean')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **fractal_dimension_mean**"""
+
 sns.boxplot(x=df['fractal_dimension_mean'])
 plt.title('fractal_dimension_mean')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **radius_se**"""
 
 sns.boxplot(x=df['radius_se'])
 plt.title('radius_se')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **texture_se**"""
+
 sns.boxplot(x=df['texture_se'])
 plt.title('texture_se')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **perimeter_se**"""
 
 sns.boxplot(x=df['perimeter_se'])
 plt.title('perimeter_se')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **area_se**"""
+
 sns.boxplot(x=df['area_se'])
 plt.title('area_se')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **smoothness_se**"""
 
 sns.boxplot(x=df['smoothness_se'])
 plt.title('smoothness_se')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **compactness_se**"""
+
 sns.boxplot(x=df['compactness_se'])
 plt.title('compactness_se')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **concavity_se**"""
 
 sns.boxplot(x=df['concavity_se'])
 plt.title('concavity_se')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **concave points_se**"""
+
 sns.boxplot(x=df['concave points_se'])
 plt.title('concave points_se')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **symmetry_se**"""
 
 sns.boxplot(x=df['symmetry_se'])
 plt.title('symmetry_se')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **fractal_dimension_se**"""
+
 sns.boxplot(x=df['fractal_dimension_se'])
 plt.title('fractal_dimension_se')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **radius_worst**"""
 
 sns.boxplot(x=df['radius_worst'])
 plt.title('radius_worst')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **texture_worst**"""
+
 sns.boxplot(x=df['texture_worst'])
 plt.title('texture_worst')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **perimeter_worst**"""
 
 sns.boxplot(x=df['perimeter_worst'])
 plt.title('perimeter_worst')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **area_worst**"""
+
 sns.boxplot(x=df['area_worst'])
 plt.title('area_worst')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **smoothness_worst**"""
 
 sns.boxplot(x=df['smoothness_worst'])
 plt.title('smoothness_worst')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **compactness_worst**"""
+
 sns.boxplot(x=df['compactness_worst'])
 plt.title('compactness_worst')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **concavity_worst**"""
 
 sns.boxplot(x=df['concavity_worst'])
 plt.title('concavity_worst')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **concave points_worst**"""
+
 sns.boxplot(x=df['concave points_worst'])
 plt.title('concave points_worst')
 plt.show()
+
+"""##### Mendeteksi outlier pada kolom **symmetry_worst**"""
 
 sns.boxplot(x=df['symmetry_worst'])
 plt.title('symmetry_worst')
 plt.show()
 
+"""##### Mendeteksi outlier pada kolom **fractal_dimension_worst**"""
+
 sns.boxplot(x=df['fractal_dimension_worst'])
 plt.title('fractal_dimension_worst')
 plt.show()
 
-"""#### Univariate Analysis"""
+"""Insight: Meskipun outlier ditemukan pada beberapa variabel, data tersebut tidak dihapus atau dibersihkan karena dalam konteks data kesehatan, nilai ekstrim dapat mengandung informasi penting yang relevan untuk diagnosis penyakit
+
+#### Univariate Analysis
+
+##### Mengelompokkan fitur-fitur dalam dataset berdasarkan tipe datanya
+"""
 
 numerical_features = df.select_dtypes(include=np.number).columns.tolist()
 numerical_features.remove('id')
@@ -199,7 +291,12 @@ categorical_features = df.select_dtypes(exclude=np.number).columns.tolist()
 print("Numerical features:", numerical_features)
 print("Categorical features:", categorical_features)
 
-"""##### Categorical Feature"""
+"""Insight: Dataset memiliki 30 fitur numerik yang beragam, seperti radius_mean, texture_mean, dan area_mean, yang menggambarkan berbagai karakteristik morfologi jaringan payudara, serta 1 fitur kategorikal yaitu diagnosis yang menjadi target klasifikasi dengan nilai kelas jinak atau ganas
+
+##### Categorical Feature
+
+Melakukan visualisasi distribusi data untuk setiap fitur kategorikal dalam dataset
+"""
 
 for feature in categorical_features:
     plt.figure(figsize=(6, 4))
@@ -209,7 +306,12 @@ for feature in categorical_features:
     plt.ylabel('Count')
     plt.show()
 
-"""##### Numerical Features"""
+"""Insight: Visualisasi menunjukkan distribusi kelas pada variabel diagnosis, di mana jumlah sampel dengan diagnosis jinak (B) lebih banyak, yakni 357 data, dibandingkan dengan diagnosis ganas (M) sebanyak 212 data
+
+##### Numerical Features
+
+Membuat visualisasi distribusi masing-masing fitur numerik dalam dataset
+"""
 
 plt.figure(figsize=(15, 20))
 for i, feature in enumerate(numerical_features):
@@ -221,16 +323,31 @@ for i, feature in enumerate(numerical_features):
 plt.tight_layout()
 plt.show()
 
-"""##### Multivariate Analysis"""
+"""Insight: Sebagian besar fitur memiliki distribusi yang cenderung miring ke kanan (positively skewed) dengan puncak yang jelas, menunjukkan bahwa sebagian besar sampel memiliki nilai fitur dalam rentang rendah hingga menengah, sedangkan nilai tinggi relatif jarang dan bisa jadi berperan sebagai outlier
+
+#### Multivariate Analysis
+
+##### Membuat visualisasi pairplot untuk semua fitur numerik dalam dataset dengan pewarnaan berdasarkan kelas diagnosis
+"""
 
 sns.pairplot(df, vars=numerical_features, hue='diagnosis', palette='viridis')
 plt.suptitle('Pairplot of Numerical Features by Diagnosis', y=1.02)
 plt.show()
 
+"""Insight: Pairplot menunjukkan bahwa beberapa pasangan fitur numerik mampu memisahkan secara visual antara data dengan diagnosis jinak (B) dan ganas (M), yang diwakili oleh dua warna berbeda. Sebaran data membentuk pola klaster yang cukup jelas pada kombinasi fitur tertentu
+
+##### Memvisualisasikan rata-rata nilai setiap fitur numerik berdasarkan kategori diagnosis
+"""
+
 for feature in numerical_features:
     sns.catplot(x='diagnosis', y=feature, data=df, kind='bar', hue='diagnosis', palette='viridis', height=4, aspect=1.5)
     plt.suptitle(f'{feature} by Diagnosis', y=1.02)
     plt.show()
+
+"""Insight: Visualisasi bar plot menunjukkan bahwa nilai rata-rata pada fitur numerik seperti radius_mean dan texture_mean cenderung lebih tinggi pada pasien dengan diagnosis ganas (M) dibandingkan dengan yang jinak (B). Pola ini menegaskan bahwa beberapa fitur numerik memiliki perbedaan yang signifikan antara kedua kelas diagnosis, sehingga berpotensi menjadi indikator penting dalam proses klasifikasi
+
+##### Menghitung dan memvisualisasikan korelasi antar fitur numerik dalam dataset menggunakan heatmap
+"""
 
 correlation_matrix = df[numerical_features].corr()
 
@@ -239,44 +356,67 @@ sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
 plt.title('Correlation Heatmap of Numerical Features')
 plt.show()
 
-"""### Data Preparation
+"""Insight: Beberapa fitur numerik memiliki korelasi yang sangat tinggi, seperti radius_mean, perimeter_mean, dan area_mean yang saling berkorelasi hampir sempurna (mendekati 1.00). Ini mengindikasikan adanya redundansi informasi antar fitur, yang bisa menyebabkan multikolinearitas dalam model dan dapat dipertimbangkan untuk reduksi dimensi dengan PCA
 
-#### Encoding Fitur Kategorikal
+### Data Preparation
+
+#### Encoding Fitur Kategorikal dengan One Hot Encoding
 """
 
 df_encoded = pd.get_dummies(df, columns=['diagnosis'], prefix='diagnosis')
 
 display(df_encoded.head())
 
-"""#### Standarisasi"""
+"""Insight: Fitur diagnosis telah berhasil diubah menjadi dua kolom dummy (diagnosis_B dan diagnosis_M) menggunakan teknik one-hot encoding
+
+#### Standarisasi
+
+##### Menghapus kolom id, diagnosis_B, dan diagnosis_M dari DataFrame yang telah diencoding
+"""
 
 X = df_encoded.drop(columns=['id', 'diagnosis_B', 'diagnosis_M'])
+
+"""##### Melakukan proses standarisasi terhadap fitur-fitur numerik dalam variabel X menggunakan StandardScaler dari scikit-learn"""
 
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-"""#### Reduksi Dimensi dengan PCA"""
+"""#### Reduksi Dimensi dengan PCA
+
+##### Mereduksi dimensi data hasil standarisasi (X_scaled) menjadi hanya 2 komponen utama
+"""
 
 pca = PCA(n_components=2)
 X_pca = pca.fit_transform(X_scaled)
 
+"""##### Menampilkan proporsi variasi (informasi) dalam data asli yang berhasil dijelaskan oleh masing-masing komponen utama hasil PCA"""
+
 print("Explained variance ratio per principal component:")
 print(pca.explained_variance_ratio_)
 
+"""##### Visualisasi dan evaluasi distribusi data dalam ruang dua dimensi yang telah direduksi"""
+
 df_pca = pd.DataFrame(data=X_pca, columns=['PC1', 'PC2'])
 df_pca['diagnosis'] = df['diagnosis']
+
+"""##### Membuat scatter plot dua dimensi dari hasil PCA menggunakan fitur PC1 dan PC2, dengan pewarnaan berdasarkan kategori diagnosis"""
 
 plt.figure(figsize=(8,6))
 sns.scatterplot(x='PC1', y='PC2', hue='diagnosis', data=df_pca, palette='viridis')
 plt.title('PCA of Breast Cancer Dataset')
 plt.show()
 
-"""### Train-Test Split"""
+"""### Train-Test Split
+
+#### Mengubah label diagnosis menjadi format numerik, serta menetapkan data hasil PCA sebagai fitur input (X) untuk proses pelatihan model selanjutnya
+"""
 
 le = LabelEncoder()
 y = le.fit_transform(df['diagnosis'])
 
 X = X_pca
+
+"""#### Membagi data menjadi data latih dan data uji dengan proporsi 90% untuk pelatihan dan 10% untuk pengujian"""
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.1, random_state=42, stratify=y
@@ -292,26 +432,12 @@ lr_model.fit(X_train, y_train)
 
 y_pred_lr = lr_model.predict(X_test)
 
-print("Logistic Regression Results:")
-print(f"Accuracy: {accuracy_score(y_test, y_pred_lr):.4f}")
-print("Classification Report:")
-print(classification_report(y_test, y_pred_lr, target_names=le.classes_))
-print("Confusion Matrix:")
-print(confusion_matrix(y_test, y_pred_lr))
-
 """#### Model Development dengan Random Forest"""
 
 rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
 rf_model.fit(X_train, y_train)
 
 y_pred_rf = rf_model.predict(X_test)
-
-print("Random Forest Results:")
-print(f"Accuracy: {accuracy_score(y_test, y_pred_rf):.4f}")
-print("Classification Report:")
-print(classification_report(y_test, y_pred_rf, target_names=le.classes_))
-print("Confusion Matrix:")
-print(confusion_matrix(y_test, y_pred_rf))
 
 """#### Model Development dengan Support Vector Machine"""
 
@@ -320,6 +446,35 @@ svm_model.fit(X_train, y_train)
 
 y_pred_svm = svm_model.predict(X_test)
 
+"""### Evaluasi Model
+
+#### Evaluasi Model Logistic Regression
+"""
+
+print("Logistic Regression Results:")
+print(f"Accuracy: {accuracy_score(y_test, y_pred_lr):.4f}")
+print("Classification Report:")
+print(classification_report(y_test, y_pred_lr, target_names=le.classes_))
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred_lr))
+
+"""Insight: Hasil evaluasi model Logistic Regression menunjukkan performa sempurna dengan akurasi, precision, recall, dan F1-score semuanya bernilai 1.00 untuk kedua kelas
+
+#### Evaluasi Model Random Forest
+"""
+
+print("Random Forest Results:")
+print(f"Accuracy: {accuracy_score(y_test, y_pred_rf):.4f}")
+print("Classification Report:")
+print(classification_report(y_test, y_pred_rf, target_names=le.classes_))
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred_rf))
+
+"""Insight: Hasil evaluasi model Random Forest menunjukkan performa yang sangat baik dengan akurasi, precision, recall, dan F1-score sempurna (1.00) untuk kedua kelas diagnosis
+
+#### Evaluasi Model Support Vector machine (SVM)
+"""
+
 print("SVM Results:")
 print(f"Accuracy: {accuracy_score(y_test, y_pred_svm):.4f}")
 print("Classification Report:")
@@ -327,7 +482,10 @@ print(classification_report(y_test, y_pred_svm, target_names=le.classes_))
 print("Confusion Matrix:")
 print(confusion_matrix(y_test, y_pred_svm))
 
-"""### Evaluasi Model"""
+"""Insight: Model SVM (Support Vector Machine) menghasilkan akurasi sebesar 94,74% dengan precision 1.00 dan recall 0.86 untuk kelas ganas (M), serta precision 0.92 dan recall 1.00 untuk kelas jinak (B)
+
+#### Membandingkan performa tiga model klasifikasi — Logistic Regression, Random Forest, dan SVM
+"""
 
 metrics = []
 
@@ -351,8 +509,9 @@ for model_name, y_pred in models_preds.items():
         'F1-Score': f1
     })
 
-# Buat DataFrame untuk menampilkan hasil
 df_metrics = pd.DataFrame(metrics)
 
 print("Evaluation Metrics Comparison:")
 print(df_metrics)
+
+"""Insight: Hasil perbandingan metrik evaluasi menunjukkan bahwa model Logistic Regression dan Random Forest memiliki performa sempurna pada seluruh metrik (akurasi, precision, recall, dan F1-score) dengan nilai 1.0, menandakan kemampuan luar biasa dalam mengklasifikasikan data tanpa kesalahan pada data uji. Sementara itu, model SVM mencatat akurasi sebesar 94,74% dengan precision tetap sempurna (1.0), namun recall menurun menjadi 0.857143 yang menyebabkan nilai F1-score juga turun menjadi 0.923077. Ini menunjukkan bahwa meskipun SVM cukup akurat secara keseluruhan, model ini masih menghasilkan beberapa false negative, menjadikannya kurang ideal dalam konteks diagnosis medis. Berdasarkan hasil evaluasi tersebut, Random Forest dipilih sebagai model terbaik karena selain mencapai performa yang sangat tinggi dan seimbang di semua metrik, model ini juga memiliki keunggulan dalam menangani data non-linear dan bersifat lebih robust terhadap noise dan overfitting dibandingkan Logistic Regression, menjadikannya lebih andal untuk diterapkan dalam skenario dunia nyata"""
